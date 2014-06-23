@@ -89,6 +89,9 @@ destDir = os.path.expanduser(destDir)
 # PNG
 def process_png(f):
     return process_jpg(f)
+# 3gp
+def process_3gp(f):
+    return general_processing(f)
 # JPEG
 def process_jpeg(f):
     return process_jpg(f)
