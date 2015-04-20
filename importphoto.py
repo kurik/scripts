@@ -115,6 +115,9 @@ def process_mpg(f):
 # AVI
 def process_avi(f):
     return general_processing(f)
+# MOV
+def process_mov(f):
+    return general_processing(f)
 
 # General handler
 def general_processing(f):
