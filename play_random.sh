@@ -7,7 +7,7 @@ while [[ $# -ne 0 ]]; do
         # We have a directory; add all files in the directory to the list of files to play
         while read F; do
             SNDFILES=("${SNDFILES[@]}" "${F}")
-        done < <(find "$1" ! -type d)
+        done < <(find "$1" -follow ! -type d)
     else
         # We have a file to play, so add it to the list
         SNDFILES=("${SNDFILES[@]}" "$1")
