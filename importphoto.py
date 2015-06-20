@@ -21,65 +21,19 @@ DEF_CFG_FILE = '~/.importphoto'
 exifKeys = ['Exif.Image.DateTime', 'Exif.Photo.DateTimeDigitized', 'Exif.Photo.DateTimeOriginal']
 
 # parse arguments
-parser = OptionParser(usage="%prog", version="%prog 0.1")
+parser = OptionParser(usage="usage: %prog [options] srcdir destdir", version="%prog 0.1")
 parser.add_option("-c", "--cfgfile", metavar = "FILE", dest = "cfgFile", default = DEF_CFG_FILE,
     help = "Configuration file to be used instead of the default one")
-parser.add_option("-s", "--srcdir", metavar = "FILE", dest = "srcDir", default = None,
-    help = "Source directory, where images and video files are located")
-parser.add_option("-d", "--destdir", metavar = "FILE", dest = "destDir", default = None,
-    help = "Destination directory, where images and video files will be copied/moved")
 parser.add_option("-e", "--extensions", metavar = "LIST", dest = "extensions", default = None,
     help = "List of comma separated extensions to proceed")
 parser.add_option("-m", "--move", action = "store_true", dest = "move", default = defaults['move'], help = "Files will be moved instead of copied (aka delete after copy)")
 
 options, args = parser.parse_args()
+if len(args) != 2:
+    parser.error("incorrect number of arguments")
 
-# Parse the config file
-config = ConfigParser()
-cfgFile = os.path.expanduser(options.cfgFile)
-if os.path.isfile(cfgFile):
-    try:
-        config.read(cfgFile)
-    except:
-        print('Invalid format of the config file (%s)' % cfgFile)
-        sys.exit(1)
-else:
-    print('Config file %s does not exists, using default values instead' % cfgFile)
-sys.stdout.flush()
-
-### Merge cmdline, config file and defaults ###
-# srcdir
-if options.srcDir is None:
-    if config.has_option('common', 'srcDir'):
-        srcDir = config.get('common', 'srcDir')
-    else:
-        srcDir = defaults['srcdir']
-else:
-    srcDir = options.srcDir
-# destdir
-if options.destDir is None:
-    if config.has_option('common', 'destDir'):
-        destDir = config.get('common', 'destDir')
-    else:
-        destDir = defaults['destdir']
-else:
-    destDir = options.destDir
-# extensions
-if options.extensions is None:
-    if config.has_option('common', 'extensions'):
-        extensions = config.get('common', 'extensions')
-    else:
-        extensions = defaults['extensions']
-else:
-    extensions = options.extensions
-# move
-if options.move:
-    move = True
-else:
-    if config.has_option('common', 'move'):
-        move = bool(config.get('common', 'move'))
-    else:
-        move = False
+srcDir = args[0]
+destDir = args[1]
 
 ### Expand all the paths
 srcDir = os.path.expanduser(srcDir)
@@ -145,7 +99,10 @@ def copy_move(f, dt, destDir, move):
         sys.stdout.flush()
     else:
         try:
-            shutil.move(f, destPath)
+            if move:
+                shutil.move(f, destPath)
+            else:
+                shutil.copy2(f, destPath)
         except shutil.Error as e:
             print 'FAILED'
             sys.stdout.flush()
@@ -162,8 +119,9 @@ for root, dirs, files in os.walk(srcDir):
                 dt = locals()['process_' + ext](root + '/' + f) # Call the special handler
             except Exception as e:
                 print('An error ocured processing file %s - ignoring' % f) 
+                raise
             #try:
-            copy_move(root + '/' + f, dt, destDir, move)
+            copy_move(root + '/' + f, dt, destDir, options.move)
             #except Exception as e:
                 #print('An error occured copying/moving file %s - ignoring' % f)
         else:
