@@ -64,7 +64,7 @@ class GPhoto(object):
         try:
             f = self.service.files().insert(body = body, media_body = media_body).execute()
             return f
-        except apiclient.errors.HttpError, error:
+        except apiclient.errors.HttpError as error:
             return None
 
 if __name__ == "__main__":
