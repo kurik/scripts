@@ -3,13 +3,16 @@
 
 import apiclient
 import oauth2client
+from oauth2client import tools
+from oauth2client.file import Storage
+from apiclient import discovery
 import httplib2
 import oauth2client
 import os
 
 try:
     import argparse
-    flags = argparse.ArgumentParser(parents=[oauth2client.tools.argparser]).parse_args()
+    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
     flags = None
 
@@ -34,7 +37,7 @@ class GPhoto(object):
         if self.oauth2storage is None:
             raise ValueError('Attribute oauth2storage needs to be defined')
 
-        self.store = oauth2client.file.Storage(self.oauth2storage)
+        self.store = Storage(self.oauth2storage)
         self.creds = self.store.get()
         if self.creds is None or self.creds.invalid:
             flow = oauth2client.client.flow_from_clientsecrets(self.oauth2json, OAUTH2_SCOPE)
@@ -43,7 +46,7 @@ class GPhoto(object):
             else:
                 self.creds = oauth2client.tools.run(flow, self.store)
             self.store.put(self.creds)
-        self.service = apiclient.discovery.build('drive', 'v2', http = self.creds.authorize(httplib2.Http()))
+        self.service = discovery.build('drive', 'v2', http = self.creds.authorize(httplib2.Http()))
 
     def create_dir(self, folder_title, parent_folder = 'root'):
         body = {
@@ -68,7 +71,10 @@ class GPhoto(object):
             return None
 
 if __name__ == "__main__":
-    gp = GPhoto(oauth2json = '/home/jkurik/.gls.json', oauth2storage = '/home/jkurik/.gls')
+    oauth2json = os.path.expanduser('~/.gp.json')
+    oauth2storage = os.path.expanduser('~/.gp')
+    gp = GPhoto(oauth2json = oauth2json, oauth2storage = oauth2storage)
     gp.auth()
     d = gp.create_dir("BufGuf")
-    gp.upload_file('/home/jkurik/readiness-f23-alpha.txt', d['id'])
+    #gp.upload_file(os.path.expanduser('~/.bashrc'), d['id'])
+    gp.upload_file(os.path.expanduser('~/fscheck.sh'), d['id'])
