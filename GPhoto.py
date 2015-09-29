@@ -76,5 +76,5 @@ if __name__ == "__main__":
     gp = GPhoto(oauth2json = oauth2json, oauth2storage = oauth2storage)
     gp.auth()
     d = gp.create_dir("BufGuf")
-    #gp.upload_file(os.path.expanduser('~/.bashrc'), d['id'])
-    gp.upload_file(os.path.expanduser('~/fscheck.sh'), d['id'])
+    #gp.upload_file(os.path.expanduser('~/fscheck.sh'), d['id'])
+    gp.upload_file(os.path.expanduser('~/readiness-f23-alpha.txt'), d['id'])
