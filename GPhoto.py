@@ -18,6 +18,51 @@ except ImportError:
 
 
 OAUTH2_SCOPE = 'https://www.googleapis.com/auth/drive'
+DIR_MIME = 'application/vnd.google-apps.folder'
+
+class GPhotoCache(object):
+    def __init__(self):
+        self.cache = {}
+        self.cache['root'] = ("/", "")
+
+    def add(self, title, file_id, parent_id = 'root'):
+        self.cache[file_id] = (title, parent_id)
+
+    def rm(self, file_id):
+        try:
+            del self.cache[file_id]
+        except:
+            pass
+
+    def find_id(self, file_id):
+        try:
+            return self.cache[file_id]
+        except:
+            return None
+
+    def find(self, parent_id, title):
+        for c in self.cache:
+            (t, p_id) = self.cache[c]
+            if (parent_id == p_id) and (title == t):
+                return c
+        return None
+
+    def find_parent(self, parent_id):
+        result = []
+        for c in self.cache:
+            (t, p_id) = self.cache[c]
+            if parent_id == p_id:
+                result.append(c)
+        return result
+            
+    def find_title(self, title):
+        result = []
+        for c in self.cache:
+            (t, p_id) = self.cache[c]
+            if title == t:
+                result.append(c)
+        return result
+
 
 class GPhoto(object):
     def __init__(self, oauth2json = None, oauth2storage = None):
@@ -26,7 +71,7 @@ class GPhoto(object):
         self.store = None
         self.creds = None
         self.service = None
-        self.cache = {}
+        self.cache = GPhotoCache()
 
     def auth(self, oauth2json = None, oauth2storage = None):
         if oauth2json is not None:
@@ -53,9 +98,10 @@ class GPhoto(object):
         body = {
             "title": folder_title,
             "parents": [{"id": parent_folder}],
-            "mimeType": "application/vnd.google-apps.folder",
+            "mimeType": DIR_MIME,
         }
         directory = self.service.files().insert(body = body).execute()
+        self.cache.add(directory['id'], folder_title, parent_folder)
         return directory
 
     def upload_file(self, filename, parent_folder = 'root'):
@@ -67,11 +113,17 @@ class GPhoto(object):
         }
         try:
             f = self.service.files().insert(body = body, media_body = media_body).execute()
+            self.cache.add(f['id'], basename, parent_folder)
             return f
         except apiclient.errors.HttpError as error:
             return None
 
     def get_child_id(self, title, parent_id):
+        # Try cache
+        cache = self.cache.find(title, parent_id)
+        if cache is not None:
+            return cache
+        # Not found in cache - ask Google
         page_token = None
         while True:
             try:
@@ -81,6 +133,7 @@ class GPhoto(object):
                 children = self.service.children().list(folderId = parent_id, **param).execute()
                 for child in children.get('items', []):
                     ch = self.service.files().get(fileId = child['id']).execute()
+                    self.cache.add(ch['id'], ch['title'], parent_id)
                     if ch['title'] == title:
                         return child['id']
                 page_token = children.get('nextPageToken')
@@ -114,6 +167,6 @@ if __name__ == "__main__":
     #print 'Personal', gp.file_exists('Personal')
     #print 'Personal/Blbost', gp.file_exists('Personal/Blbost')
     #print 'Pictures/Foto/2015/07/29', gp.file_exists('Pictures/Foto/2015/07/29')
-    print 'Pictures/Foto/2015/07/29/IMG_2552.JPG', gp.file_exists('Pictures/Foto/2015/07/29/IMG_2552.JPG')
-    print 'Pictures/Foto/2015/07/29/IMG_2552.jpg', gp.file_exists('Pictures/Foto/2015/07/29/IMG_2552.jpg')
-    print 'Pictures/Foto/2015/07/29/IMG2552.JPG', gp.file_exists('Pictures/Foto/2015/07/29/IMG2552.JPG')
+    print('Pictures/Foto/2015/07/29/IMG_2552.JPG', gp.file_exists('Pictures/Foto/2015/07/29/IMG_2552.JPG'))
+    print('Pictures/Foto/2015/07/29/IMG_2552.jpg', gp.file_exists('Pictures/Foto/2015/07/29/IMG_2552.jpg'))
+    print('Pictures/Foto/2015/07/29/IMG2552.JPG', gp.file_exists('Pictures/Foto/2015/07/29/IMG2552.JPG'))
