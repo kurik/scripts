@@ -40,7 +40,7 @@ class GPhotoCache(object):
         except:
             return None
 
-    def find(self, parent_id, title):
+    def find(self, title, parent_id):
         for c in self.cache:
             (t, p_id) = self.cache[c]
             if (parent_id == p_id) and (title == t):
@@ -101,7 +101,7 @@ class GPhoto(object):
             "mimeType": DIR_MIME,
         }
         directory = self.service.files().insert(body = body).execute()
-        self.cache.add(directory['id'], folder_title, parent_folder)
+        self.cache.add(folder_title, directory['id'], parent_folder)
         return directory
 
     def upload_file(self, filename, parent_folder = 'root'):
@@ -113,7 +113,7 @@ class GPhoto(object):
         }
         try:
             f = self.service.files().insert(body = body, media_body = media_body).execute()
-            self.cache.add(f['id'], basename, parent_folder)
+            self.cache.add(basename, f['id'], parent_folder)
             return f
         except apiclient.errors.HttpError as error:
             return None
@@ -133,7 +133,7 @@ class GPhoto(object):
                 children = self.service.children().list(folderId = parent_id, **param).execute()
                 for child in children.get('items', []):
                     ch = self.service.files().get(fileId = child['id']).execute()
-                    self.cache.add(ch['id'], ch['title'], parent_id)
+                    self.cache.add(ch['title'], ch['id'], parent_id)
                     if ch['title'] == title:
                         return child['id']
                 page_token = children.get('nextPageToken')
