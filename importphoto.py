@@ -2,6 +2,8 @@
 
 import sys
 import os.path
+import gi
+gi.require_version('GExiv2', '0.10')
 from gi.repository import GExiv2
 import datetime
 import shutil

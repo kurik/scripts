@@ -138,7 +138,7 @@ class GPhoto(object):
             pid = fid
         return fid
 
-    def get_file_id(self, title, parent_id):
+    def get_file_id(self, title, parent_id = 'root'):
         # Try cache
         cache = self.cache.find(title, parent_id)
         if cache is not None:
@@ -167,6 +167,8 @@ class GPhoto(object):
     def file_exists(self, file_name, root_dir = 'root'):
         fn = file_name.split('/')
         file_id = self.get_file_id(fn[0], root_dir)
+        if file_id is None:
+            return False
         if len(fn) == 1:
             # Check existence of the file
             return file_id is not None
