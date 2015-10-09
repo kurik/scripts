@@ -12,10 +12,9 @@ import os
 
 try:
     import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
+    flags = argparse.ArgumentParser(parents=[tools.argparser], add_help=False)
+except:
     flags = None
-
 
 OAUTH2_SCOPE = 'https://www.googleapis.com/auth/drive'
 DIR_MIME = 'application/vnd.google-apps.folder'
@@ -87,14 +86,25 @@ class GPhoto(object):
         self.creds = self.store.get()
         if self.creds is None or self.creds.invalid:
             flow = oauth2client.client.flow_from_clientsecrets(self.oauth2json, OAUTH2_SCOPE)
-            if flags:
-                self.creds = oauth2client.tools.run_flow(flow, self.store, flags)
+            if flags is not None:
+                self.creds = oauth2client.tools.run_flow(flow, self.store, flags.parse_args())
             else:
                 self.creds = oauth2client.tools.run(flow, self.store)
             self.store.put(self.creds)
         self.service = discovery.build('drive', 'v2', http = self.creds.authorize(httplib2.Http()))
 
     def create_dir(self, folder_title, parent_folder = 'root'):
+        # Check whether the directory does not already exists in cache
+        dir_id = self.cache.find(folder_title, parent_folder)
+        if dir_id is not None:
+            dentry = self.cache[dir_id]
+            return {
+                'id': dir_id,
+                'title': dentry[0],
+                'parents': [{"id": dentry[1]}],
+                'mimeType': DIR_MIME,
+            }
+        # The directory has not been found in the cache, lets ask Google
         body = {
             "title": folder_title,
             "parents": [{"id": parent_folder}],
@@ -117,6 +127,16 @@ class GPhoto(object):
             return f
         except apiclient.errors.HttpError as error:
             return None
+
+    def get_id(self, path):
+        path_list = path.split('/')
+        pid = 'root'
+        for p in path_list:
+            fid = self.get_file_id(p, pid)
+            if fid is None:
+                return None
+            pid = fid
+        return fid
 
     def get_file_id(self, title, parent_id):
         # Try cache
