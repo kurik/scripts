@@ -162,23 +162,22 @@ def copy_move(f, dt, destDir, move):
         print('OK')
         sys.stdout.flush()
 
+def treat_file(f, root = ''):
+    ext = f.split('.')[-1].lower()
+    if 'process_' + ext in globals(): # Check whether we have a special handler defined for this extension
+        try:
+            dt = globals()['process_' + ext](root + '/' + f) # Call the special handler
+        except Exception as e:
+            print('An error ocured processing file %s - ignoring' % f)
+            raise
+        copy_move(root + '/' + f, dt, destDir, cmdline.move)
+    else:
+        print('Unknown file %s - ignoring' % f)
+
 ### Look for all the files and handle these accordingly ###
-for root, dirs, files in os.walk(srcDir):
-    for f in files:
-        ext = f.split('.')[-1].lower()
-        if 'process_' + ext in locals(): # Check whether we have a special handler defined for this extension
-            try:
-                dt = locals()['process_' + ext](root + '/' + f) # Call the special handler
-            except Exception as e:
-                print('An error ocured processing file %s - ignoring' % f) 
-                raise
-            #try:
-            copy_move(root + '/' + f, dt, destDir, cmdline.move)
-            #except Exception as e:
-                #print('An error occured copying/moving file %s - ignoring' % f)
-        else:
-            # Call a general handler
-            #general_processing(root + '/' + f)
-            # Ignore the unknown file
-            print('Unknown file %s - ignoring' % f)
-    
+if os.path.isfile(srcDir):
+    treat_file(srcDir)
+else:
+    for root, dirs, files in os.walk(srcDir):
+        for f in files:
+            treat_file(f, root)
