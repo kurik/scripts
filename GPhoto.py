@@ -9,6 +9,7 @@ from apiclient import discovery
 import httplib2
 import oauth2client
 import os
+import ItemCache
 
 try:
     import argparse
@@ -34,7 +35,7 @@ class _GPIter(object):
             
 class _GPhotoCache(object):
     def __init__(self):
-        self.cache = {}
+        self.cache = ItemCache.ItemDiskCache('GPhoto.cache', '/tmp', None)
         self.cache['root'] = ("/", "")
 
     def __len__(self):
