@@ -163,14 +163,17 @@ def copy_move(f, dt, destDir, move):
         sys.stdout.flush()
 
 def treat_file(f, root = ''):
+    if root != '':
+        if root[-1] != '/':
+            root += '/'
     ext = f.split('.')[-1].lower()
     if 'process_' + ext in globals(): # Check whether we have a special handler defined for this extension
         try:
-            dt = globals()['process_' + ext](root + '/' + f) # Call the special handler
+            dt = globals()['process_' + ext](root + f) # Call the special handler
         except Exception as e:
             print('An error ocured processing file %s - ignoring' % f)
             raise
-        copy_move(root + '/' + f, dt, destDir, cmdline.move)
+        copy_move(root + f, dt, destDir, cmdline.move)
     else:
         print('Unknown file %s - ignoring' % f)
 
