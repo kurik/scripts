@@ -24,7 +24,7 @@ while [ 0 ]; do
             convert -rotate 270 "${TEMPIMG}" "${D}.png"
             # Send the photo to GDrive
             echo "Triggering send of the image to GDrive"
-            /store/scripts/importphoto.py -g "${D}.png" "${GDRIVEPATH}" &
+            /store/scripts/importphoto.py -m -g "${D}.png" "${GDRIVEPATH}" &
         else
             echo "The image ${D}.png is empty ... Ignoring"
         fi

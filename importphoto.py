@@ -149,7 +149,9 @@ def copy_move(f, dt, destDir, move):
             if move:
                 if not cmdline.test:
                     if cmdline.gdrive:
-                        gdrive.upload_file(f, did)
+                        fh = gdrive.upload_file(f, did)
+                        if fh is not None:
+                            os.remove(f)
                     else:
                         shutil.move(f, destPath)
             else:
