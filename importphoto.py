@@ -60,7 +60,10 @@ def process_jpeg(f):
 # JPG
 def process_jpg(f):
     exif = GExiv2.Metadata()
-    exif.open_path(f)
+    try:
+        exif.open_path(f)
+    except:
+        return general_processing(f)
     exifKey = ''
     for ek in exifKeys:
         if ek in exif:
