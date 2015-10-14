@@ -36,7 +36,9 @@ class _GPIter(object):
 class _GPhotoCache(object):
     def __init__(self):
         self.cache = ItemCache.ItemDiskCache('GPhoto.cache', '/tmp', None)
+        self.rcache = ItemCache.ItemDiskCache('GPhoto.rcache', '/tmp', None)
         self.cache['root'] = ("/", "")
+        self.rcache[self._rkey("/", "")] = 'root'
 
     def __len__(self):
         return len(self.cache)
@@ -47,9 +49,12 @@ class _GPhotoCache(object):
     def __setitem__(self, file_id, value):
         (title, parent_id) = value
         self.cache[file_id] = (title, parent_id)
+        self.rcache[self._rkey(title, parent_id)] = file_id
 
     def __delitem__(self, file_id):
+        (title, parent_id) = self.cache[file_id]
         del self.cache[file_id]
+        del self.rcache[self._rkey(title, parent_id)]
 
     def __iter__(self):
         return _GPIter(self.cache.keys())
@@ -57,11 +62,18 @@ class _GPhotoCache(object):
     def __contains__(self, file_id):
         return file_id in self.cache
 
+    def _rkey(self, title, parent_id):
+        return str(title + '::' + parent_id)
+
     def find(self, title, parent_id):
-        for c in self.cache:
-            (t, p_id) = self.cache[c]
-            if (parent_id == p_id) and (title == t):
-                return c
+        try:
+            return self.rcache[self._rkey(title, parent_id)]
+        except:
+            for c in self.cache:
+                (t, p_id) = self.cache[c]
+                if (parent_id == p_id) and (title == t):
+                    self.rcache[self._rkey(title, parent_id)] = c
+                    return c
         return None
 
 class GPhoto(object):
