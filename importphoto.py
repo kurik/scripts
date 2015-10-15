@@ -15,7 +15,7 @@ defaults = {
     'srcdir':'.',
     'destdir':'.',
     'extensions':'jpg,jpeg,mpg,avi,png,gif',
-    'move':False,
+    'move': False,
     'gdrive': False,
 }
 
@@ -151,6 +151,7 @@ def copy_move(f, dt, destDir, move):
                     if cmdline.gdrive:
                         fh = gdrive.upload_file(f, did)
                         if fh is not None:
+                            print('Removing the source file: %s ... ' % f, end = '')
                             os.remove(f)
                     else:
                         shutil.move(f, destPath)
