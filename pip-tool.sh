@@ -5,12 +5,12 @@ function help {
     echo "      $0 command"
     echo
     echo "Available commands:"
-    echo "  upgrade ... perform upgrade of all pip modules"
+    echo "  upgrade ... perform upgrade of all pip3 modules"
     echo "  clean   ... clean the PIP cache"
 }
 
 case "${1}" in
-    "upgrade")
+    "update"|"upgrade")
         pip3 freeze --local | \
             grep -v '^\-e' | \
             cut -d = -f 1  | \
@@ -27,4 +27,3 @@ case "${1}" in
         exit 1
         ;;
 esac
-
