@@ -21,13 +21,15 @@ defaults = {
 
 DEF_CFG_FILE = '~/.importphoto'
 
-exifKeys = ['Exif.Image.DateTime', 'Exif.Photo.DateTimeDigitized', 'Exif.Photo.DateTimeOriginal']
+#exifKeys = ['Exif.Image.DateTime', 'Exif.Photo.DateTimeDigitized', 'Exif.Photo.DateTimeOriginal']
+exifKeys = ['Exif.Photo.DateTimeOriginal', 'Exif.Photo.DateTimeDigitized', 'Exif.Image.DateTime']
 
 # parse arguments
 parser = argparse.ArgumentParser(parents = [GPhoto.flags])
 parser.add_argument("-e", "--extensions", metavar = "LIST", dest = "extensions", default = None,
     help = "List of comma separated extensions to proceed")
 parser.add_argument("-t", "--test", action = "store_true", dest = "test", default = False, help = "Runs in test (dry-run) mode")
+parser.add_argument("-f", "--force", action = "store_true", dest = "force", default = False, help = "Copy/move file even it exists at the desination")
 parser.add_argument("-g", "--gdrive", action = "store_true", dest = "gdrive", default = defaults['gdrive'], help = "Files will be copied/moved to GDrive instead of to the local filesystem.")
 parser.add_argument("-m", "--move", action = "store_true", dest = "move", default = defaults['move'], help = "Files will be moved instead of copied (aka delete after copy)")
 parser.add_argument("srcdir", help = "Source directory of photos")
@@ -103,6 +105,8 @@ def gdrive_makedirs(destPath, parent_id = 'root'):
             pid = fid
 
 def file_exists(filename):
+    if cmdline.force:
+        return False
     if cmdline.gdrive:
         return gdrive.file_exists(filename)
     else:
