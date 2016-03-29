@@ -122,6 +122,7 @@ class ItemDiskCache(ItemMemCache):
             os.makedirs(self.dirname)
 
     def _getItemPath(self, key):
+        key = "".join(i for i in key if ord(i)<128)
         return self.dirname + '/' + str(key).replace('/', '.')
 
     def expired(self, key):
