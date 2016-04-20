@@ -25,7 +25,8 @@ DEF_CFG_FILE = '~/.importphoto'
 exifKeys = ['Exif.Photo.DateTimeOriginal', 'Exif.Photo.DateTimeDigitized', 'Exif.Image.DateTime']
 
 # parse arguments
-parser = argparse.ArgumentParser(parents = [GPhoto.flags])
+#parser = argparse.ArgumentParser(parents = [GPhoto.flags])
+parser = GPhoto.flags
 parser.add_argument("-e", "--extensions", metavar = "LIST", dest = "extensions", default = None,
     help = "List of comma separated extensions to proceed")
 parser.add_argument("-t", "--test", action = "store_true", dest = "test", default = False, help = "Runs in test (dry-run) mode")
