@@ -6,6 +6,7 @@ RESOLUTION=300
 MODE="Color"
 OUTFILE="scan.pdf"
 VERBOSE=""
+COMPRESS="On"
 
 SCRIPT="${0}"
 
@@ -15,14 +16,11 @@ function help() {
     echo "  -ip IPADDRESS ... IP address of the scaner. The default is ${DEVICE_IP}"
     echo "  -r RESOLUTION ... Resolution of the scanner in DPI. The possible values are 150/300/600. The default is ${RESOLUTION} dpi"
     echo "  -m MODE ... Color mode. Possible values are Color/Gray/Lineart. the default is ${MODE}"
+    echo "  -C ... Switch off compression of the output PDF file"
     echo "  -v ... be verbose"
     echo "  -h ... print help message and exits"
     echo "  OUTFILE ... The output file. The default is ${OUTFILE}"
 }
-
-# Check dependencies
-type -t gm &> /dev/null || { echo "ERROR: GraphicsMagick is not installed."; exit 1; }
-type -t scanimage &> /dev/null || { echo "ERROR: sane-backends is not installed."; exit 1; }
 
 # Parse cmdline
 while [[ $# > 0 ]]; do
@@ -79,6 +77,9 @@ while [[ $# > 0 ]]; do
             esac
             shift
             ;;
+        "-C")
+            COMPRESS=""
+            ;;
         -v|--verbose)
             VERBOSE="-v"
             ;;
@@ -98,13 +99,27 @@ while [[ $# > 0 ]]; do
     shift
 done
 
+# Check dependencies
+type -t gm &> /dev/null || { echo "ERROR: GraphicsMagick is not installed."; exit 1; }
+type -t scanimage &> /dev/null || { echo "ERROR: sane-backends is not installed."; exit 1; }
+[[ -n "${COMPRESS}" ]] && { type -t gs &> /dev/null || { echo "ERROR: GostScript (gs) is not installed."; exit 1; } ; }
+
 if [[ -n "${VERBOSE}" ]]; then
     echo DEVICE_IP: ${DEVICE_IP}
     echo DEVICE: ${DEVICE}
     echo RESOLUTION: ${RESOLUTION}
     echo MODE: ${MODE}
     echo OUTFILE: ${OUTFILE}
+    echo COMPRESSION: ${COMPRESS:-No}
 fi
 
 # Run the scanning
 scanimage ${VERBOSE} -d "${DEVICE}" --resolution "${RESOLUTION}" --mode "${MODE}" | gm convert - "${OUTFILE}"
+if [[ -n "${COMPRESS}" ]]; then
+    [[ -n "${VERBOSE}" ]] && { echo "Compressing the scanned image"; }
+    TMPPDF="$(mktemp /tmp/scan.XXXXXX)".pdf
+    gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH \
+        -dDetectDuplicateImages -dCompressFonts=true -r"${RESOLUTION}" -sPAPERSIZE=a4 -dPDFFitPage \
+        -dFIXEDMEDIA -sOutputFile="${TMPPDF}" "${OUTFILE}"
+    mv "${OUTFILE}" "${TMPPDF}"
+fi
