@@ -26,47 +26,68 @@ function ext_status {
 }
 
 function ext_profile {
-    cp "${PSCFG}" "${PSCFG}".jku
-    cp "${PSCFG2}" "${PSCFG2}".jku
-    /usr/bin/kquitapp5 plasmashell; wait
     case "${1}" in
-        "on")
+        "${STAT_ON}")
+            #cp "${PSCFG}" "${PSCFG}".jku
+            #cp "${PSCFG2}" "${PSCFG2}".jku
+            #/usr/bin/kquitapp5 plasmashell &
+            #sleep 1
             "${XR}" --output "${EXT}" --off #--output "${INT}" --off
-            "${XR}" --output "${EXT}" --auto --left-of "${INT}" --output "${INT}" --auto
-            "${XR}" --output "${EXT}" --primary
+            #"${XR}" --output "${EXT}" --auto --left-of "${INT}" --output "${INT}" --auto
+            #"${XR}" --output "${EXT}" --primary
+            "${XR}" --output "${EXT}" --auto --left-of "${INT}" --primary --output "${INT}" --auto
+            #cp "${PSCFG}".jku "${PSCFG}"
+            #cp "${PSCFG2}".jku "${PSCFG2}"
+            #/usr/bin/plasmashell &>/dev/null &
+            #/usr/bin/kwin_x11 --replace
             ;;
-        "off")
-            "${XR}" --output "${EXT}" --off #--output "${INT}" --off
+        "${STAT_OFF}")
+            #cp "${PSCFG}" "${PSCFG}".jku
+            #cp "${PSCFG2}" "${PSCFG2}".jku
+            #/usr/bin/kquitapp5 plasmashell &
+            #sleep 1
+            #"${XR}" --output "${EXT}" --off #--output "${INT}" --off
             "${XR}" --output "${EXT}" --off --output "${INT}" --auto --primary
+            #cp "${PSCFG}".jku "${PSCFG}"
+            #cp "${PSCFG2}".jku "${PSCFG2}"
+            #/usr/bin/plasmashell &>/dev/null &
+            #/usr/bin/kwin_x11 --replace
+            ;;
+        "reset")
+            "${XR}" --output "${EXT}" --off --output "${INT}" --off
             ;;
         *)
             echo "Invalid external profile" 2>&1
-            /usr/bin/plasmashell &
             exit 1
     esac
-    cp "${PSCFG}".jku "${PSCFG}"
-    cp "${PSCFG2}".jku "${PSCFG2}"
-    /usr/bin/plasmashell &>/dev/null &
 }
 
+function auto_mode {
+    case "$(ext_status)" in
+        "${STAT_OFF}")
+            ext_profile "${STAT_ON}"
+            ;;
+        "${STAT_DISC}")
+            [[ $(ext_status) != "${STAT_DISC}" ]] && ext_profile "${STAT_OFF}"
+            ;;
+    esac
+}
 
 
 case "${1}" in
     "on")
-        [[ $(ext_status) != "${STAT_ON}" ]] && ext_profile "${STAT_ON}"
+        #[[ $(ext_status) != "${STAT_ON}" ]] && ext_profile "${STAT_ON}"
+        ext_profile "${STAT_ON}"
         ;;
     "off")
         ext_profile "${STAT_OFF}"
         ;;
     ""|"auto") # Auto mode
-        case "$(ext_status)" in
-            "${STAT_OFF}")
-                ext_profile "${STAT_ON}"
-                ;;
-            "${STAT_DISC}")
-                [[ $(ext_status) != "${STAT_DISC}" ]] && ext_profile "${STAT_OFF}"
-                ;;
-        esac
+        auto_mode
+        ;;
+    "reset"|"-f"|"--force")
+        ext_profile "reset"
+        auto_mode
         ;;
     "status")
         ext_status
