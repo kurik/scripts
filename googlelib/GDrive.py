@@ -117,6 +117,7 @@ class GDrive(GAuth.GAuth):
         return id
             
     def upload(self, filename, gdrivename = None, parent_folder = 'root'):
+        logging.debug('Going to upload file to GDrive. filename=%s , gdrivename=%s , parent_folder=%s' % (filename, gdrivename, parent_folder))
         # Convert the name of the file on GDrive in case it is not provided
         if gdrivename is None or gdrivename == '':
             gdrivename = filename.split('/')[-1]
@@ -136,7 +137,8 @@ class GDrive(GAuth.GAuth):
             media = MediaFileUpload(filename, mimeType = DEFAULT_MIMETYPE, chunksize = CHUNKSIZE, resumable = True)
         body = {
             'name': gdrivename,
-            'parents': [{"id": parent_folder}],
+            #'parents': [{"id": parent_folder}],
+            'parents': [parent_folder],
         }
         logging.debug('Starting upload of the %s file as %s' % (filename, gdrivename))
         request = self.service.files().create(body = body, media_body = media, fields='id')
@@ -205,7 +207,7 @@ class GDrive(GAuth.GAuth):
         index = 1
         oid = None
         while index < len(dirs):
-            logging.debug('Diving into %s' % dirs[index])
+            logging.debug('Diving into %s/%s' % (dirs[index - 1], dirs[index]))
             try:
                 oid = self.get_id(dirs[index], dirs[index - 1])
             except KeyError as e:
