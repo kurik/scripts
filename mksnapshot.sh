@@ -1,6 +1,7 @@
 #!/bin/bash
 
-SLEEP=300
+#SLEEP=300
+SLEEP=60
 TEMPIMG="/tmp/image.png"
 IMGTRASHHOLD=32000
 GDRIVEPATH="Pictures/Unin"
