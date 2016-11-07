@@ -70,30 +70,28 @@ def process_jpeg(f):
     return process_jpg(f)
 # JPG
 def process_jpg(f):
-    if exifAvailable:
-        exif = GExiv2.Metadata()
-        try:
-            exif.open_path(f)
-        except:
-            return general_processing(f)
+    expr = re.compile('(?P<year>\d\d\d\d)(?P<month>\d\d)(?P<day>\d\d)-(?P<hour>\d\d)(?P<minute>\d\d)(?P<second>\d\d)\.')
+    m = expr.match(os.path.basename(f))
+    if m is None:
+        # The filename does not match YYYMMDD-HHMMSS convention try Exif
         exifKey = ''
-        for ek in exifKeys:
-            if ek in exif:
-                exifKey = ek
-                break
+        if exifAvailable:
+            exif = GExiv2.Metadata()
+            try:
+                exif.open_path(f)
+            except:
+                return general_processing(f)
+            for ek in exifKeys:
+                if ek in exif:
+                    exifKey = ek
+                    break
         if exifKey == '':
             # No exif date has been found, try general processing
             return general_processing(f)
         # We have found the exif key containing a date of the picture creation
         return exif[exifKey].split(' ')[0].split(':')
     else:
-        expr = re.compile('(?P<year>\d\d\d\d)(?P<month>\d\d)(?P<day>\d\d)-(?P<hour>\d\d)(?P<minute>\d\d)(?P<second>\d\d)\.')
-        m = expr.match(os.path.basename(f))
-        if m is None:
-            # The filename does not match YYYMMDD-HHMMSS convention
-            return general_processing(f)
-        else:
-            return (m.group('year'), m.group('month'), m.group('day'))
+        return (m.group('year'), m.group('month'), m.group('day'))
 
 # MPG
 def process_mpg(f):
