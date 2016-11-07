@@ -10,9 +10,9 @@ except:
     import GCache
 import logging
 import os
+import apiclient
 from apiclient.http import MediaFileUpload
 from apiclient.http import MediaIoBaseDownload
-import apiclient
 import time
 
 DIR_MIME = 'application/vnd.google-apps.folder'
