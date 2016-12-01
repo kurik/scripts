@@ -132,10 +132,14 @@ def file_exists(filename):
 ### Copy/move a file
 def copy_move(f, dt, destDir, move):
     # Parse date
-    year, month, day = dt
+    if dt is None:
+        year, month, day = ('', '', '')
+    else:
+        year, month, day = dt
     # Check whether we have the destination directory
     try:
         destPath = destDir + '/' + year + '/' + month + '/' + day
+        destPath = '/'.join([ x for x in destPath.split('/') if x != ''])
         if not file_exists(destPath):
             print('Creating directory:', destPath, '...', end='')
             sys.stdout.flush()
@@ -194,7 +198,7 @@ def treat_file(f, root = ''):
         if root[-1] != '/':
             root += '/'
     if cmdline.notimestamp:
-        copy_move(root + f, '', destDir, cmdline.move)
+        copy_move(root + f, None, destDir, cmdline.move)
     else:
         ext = f.split('.')[-1].lower()
         if 'process_' + ext in globals(): # Check whether we have a special handler defined for this extension
