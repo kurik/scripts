@@ -39,6 +39,7 @@ parser.add_argument("-e", "--extensions", metavar = "LIST", dest = "extensions",
     help = "List of comma separated extensions to proceed")
 parser.add_argument("-t", "--test", action = "store_true", dest = "test", default = False, help = "Runs in test (dry-run) mode")
 parser.add_argument("-f", "--force", action = "store_true", dest = "force", default = False, help = "Copy/move file even it exists at the desination")
+parser.add_argument("-N", "--No time stamp resolving", action = "store_true", dest = "notimestamp", default = False, help = "Do notparse timestamp of the uploaded file. Use the destdir as the destination instead.")
 parser.add_argument("-g", "--gdrive", action = "store_true", dest = "gdrive", default = defaults['gdrive'], help = "Files will be copied/moved to GDrive instead of to the local filesystem.")
 parser.add_argument("-m", "--move", action = "store_true", dest = "move", default = defaults['move'], help = "Files will be moved instead of copied (aka delete after copy)")
 parser.add_argument("srcdir", help = "Source directory of photos")
@@ -192,16 +193,19 @@ def treat_file(f, root = ''):
     if root != '':
         if root[-1] != '/':
             root += '/'
-    ext = f.split('.')[-1].lower()
-    if 'process_' + ext in globals(): # Check whether we have a special handler defined for this extension
-        try:
-            dt = globals()['process_' + ext](root + f) # Call the special handler
-        except Exception as e:
-            print('An error ocured processing file %s - ignoring' % f)
-            raise
-        copy_move(root + f, dt, destDir, cmdline.move)
+    if cmdline.notimestamp:
+        copy_move(root + f, '', destDir, cmdline.move)
     else:
-        print('Unknown file %s - ignoring' % f)
+        ext = f.split('.')[-1].lower()
+        if 'process_' + ext in globals(): # Check whether we have a special handler defined for this extension
+            try:
+                dt = globals()['process_' + ext](root + f) # Call the special handler
+            except Exception as e:
+                print('An error ocured processing file %s - ignoring' % f)
+                raise
+            copy_move(root + f, dt, destDir, cmdline.move)
+        else:
+            print('Unknown file %s - ignoring' % f)
 
 ### Look for all the files and handle these accordingly ###
 if os.path.isfile(srcDir):
