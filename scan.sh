@@ -121,5 +121,6 @@ if [[ -n "${COMPRESS}" ]]; then
     gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH \
         -dDetectDuplicateImages -dCompressFonts=true -r"${RESOLUTION}" -sPAPERSIZE=a4 -dPDFFitPage \
         -dFIXEDMEDIA -sOutputFile="${TMPPDF}" "${OUTFILE}"
-    mv "${OUTFILE}" "${TMPPDF}"
+    # [[ -n "${VERBOSE}" ]] && echo "Renaming" "${OUTFILE}" "${TMPPDF}"
+    mv "${TMPPDF}" "${OUTFILE}"
 fi
