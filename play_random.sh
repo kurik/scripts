@@ -54,18 +54,32 @@ function get_idx {
         R=$(( ${R} + $(date +%s) ))
         echo "${R:5} % $1" | bc
     else
-        [[ $1 -eq $(( $2 + 1 )) ]] && echo 0 || echo $(( $2 + 1 ))
+        echo 0
     fi
 }
 
+FILELIST=("${SNDFILES[@]}")
 N=${#SNDFILES[@]}
-oldidx=-1
 
 while true; do
-    to_play_idx=$(get_idx ${N} ${oldidx})
+    to_play_idx=$(get_idx ${#FILELIST[@]})
     echo "***********************************************************************************"
-    echo 'PLAYING: ' $(( $to_play_idx + 1 )) "/" $N "::" "${SNDFILES[${to_play_idx}]}"
+    echo "FROM $N FILES PLAYING ::" "${FILELIST[${to_play_idx}]}"
     echo "***********************************************************************************"
-    mplayer -novideo "${SNDFILES[${to_play_idx}]}"
-    oldidx=${to_play_idx}
+    mplayer -novideo "${FILELIST[${to_play_idx}]}"
+
+    if [[ ${#FILELIST[@]} -eq 1 ]]; then
+        FILELIST=("${SNDFILES[@]}")
+        echo "EXIT"
+    else
+        xlist=()
+        idx=0
+        for i in "${FILELIST[@]}"; do
+            if [[ ${idx} -ne ${to_play_idx} ]]; then
+                xlist=("${xlist[@]}" "$i")
+            fi
+            idx=$(( ${idx} + 1 ))
+        done
+        FILELIST=("${xlist[@]}")
+    fi
 done
