@@ -66,7 +66,7 @@ while true; do
     echo "***********************************************************************************"
     echo "FROM $N FILES PLAYING ::" "${FILELIST[${to_play_idx}]}"
     echo "***********************************************************************************"
-    mplayer -novideo "${FILELIST[${to_play_idx}]}"
+    MPLAYER_VERBOSE=-2 mplayer -novideo -msglevel statusline=5 -nolirc "${FILELIST[${to_play_idx}]}"
 
     if [[ ${#FILELIST[@]} -eq 1 ]]; then
         FILELIST=("${SNDFILES[@]}")
