@@ -61,6 +61,8 @@ function get_idx {
 FILELIST=("${SNDFILES[@]}")
 N=${#SNDFILES[@]}
 
+[[ ${N} -eq 0 ]] && { usage ; exit 1; }
+
 while true; do
     to_play_idx=$(get_idx ${#FILELIST[@]})
     echo "***********************************************************************************"
