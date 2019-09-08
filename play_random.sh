@@ -7,19 +7,24 @@ function usage {
     echo "    -h ... print this help"
 }
 
-RND=1
-SEQ=0
+declare -i SEQ=0
+declare SNDFILES="$(mktemp)"
+declare FLPART="$(mktemp)"
+declare FILELIST="$(mktemp)"
+
+function cleanup {
+    rm -f "${FILELIST}" "${SNDFILES}" "${FLPART}"
+}
+
+trap cleanup EXIT
 
 # Process input params
-declare -a SNDFILES
 while [[ $# -ne 0 ]]; do
     case "$1" in
         "-r")
-            RND=1
             SEQ=0
             ;;
         "-s")
-            RND=0
             SEQ=1
             ;;
         "-h")
@@ -34,12 +39,10 @@ while [[ $# -ne 0 ]]; do
         *)
             if [[ -d "$1" ]]; then
                 # We have a directory; add all files in the directory to the list of files to play
-                while read F; do
-                    SNDFILES=("${SNDFILES[@]}" "${F}")
-                done < <(find "$1" -follow ! -type d | sort)
+                find "$1" -follow ! -type d >> "${SNDFILES}"
             else
                 # We have a file to play, so add it to the list
-                SNDFILES=("${SNDFILES[@]}" "$1")
+                echo "$1" >> "${SNDFILES}"
             fi
             ;;
         esac
@@ -47,41 +50,37 @@ while [[ $# -ne 0 ]]; do
     shift
 done
 
-
-function get_idx {
-    if [[ ${RND} -ne 0 ]]; then
-        R=${RANDOM}
-        R=$(( ${R} + $(date +%s) ))
-        echo "${R:5} % $1" | bc
-    else
-        echo 0
-    fi
+# $1 ... number of the line
+# $2 ... the file
+function get_row_n() {
+    head -n $1 "$2" | tail -n 1
 }
 
-FILELIST=("${SNDFILES[@]}")
-N=${#SNDFILES[@]}
+function count() {
+    wc -l "$1" | cut -d ' ' -f 1
+}
+
+LNS=$(count "${SNDFILES}")
+cat "${SNDFILES}" > "${FILELIST}"
+N=${LNS}
 
 [[ ${N} -eq 0 ]] && { usage ; exit 1; }
 
 while true; do
-    to_play_idx=$(get_idx ${#FILELIST[@]})
+    [[ ${SEQ} -gt 0 ]] && idx=1 || idx=$(shuf -i 1-$N -n 1)
+    to_play=$(get_row_n ${idx} "${FILELIST}")
     echo "***********************************************************************************"
-    echo "FROM $N FILES PLAYING ::" "${FILELIST[${to_play_idx}]}"
+    echo "FROM $LNS FILES PLAYING ::" "${to_play}"
     echo "***********************************************************************************"
-    MPLAYER_VERBOSE=-2 mplayer -novideo -msglevel statusline=5 -nolirc "${FILELIST[${to_play_idx}]}"
+    MPLAYER_VERBOSE=-2 mplayer -novideo -msglevel statusline=5 -nolirc "${to_play}"
 
-    if [[ ${#FILELIST[@]} -eq 1 ]]; then
-        FILELIST=("${SNDFILES[@]}")
-        echo "EXIT"
+    if [[ ${N} -eq 1 ]]; then
+        cat "${SNDFILES}" > "${FILELIST}"
+        N=${LNS}
     else
-        xlist=()
-        idx=0
-        for i in "${FILELIST[@]}"; do
-            if [[ ${idx} -ne ${to_play_idx} ]]; then
-                xlist=("${xlist[@]}" "$i")
-            fi
-            idx=$(( ${idx} + 1 ))
-        done
-        FILELIST=("${xlist[@]}")
+        head -n $(( ${idx} - 1 )) "${FILELIST}" > "${FLPART}" 2>/dev/null
+        tail -n $(( ${N} - ${idx} )) "${FILELIST}" >> "${FLPART}" 2>/dev/null
+        cat "${FLPART}" > "${FILELIST}"
+        ((N--))
     fi
 done
