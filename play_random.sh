@@ -8,12 +8,13 @@ function usage {
 }
 
 declare -i SEQ=0
-declare SNDFILES="$(mktemp)"
-declare FLPART="$(mktemp)"
-declare FILELIST="$(mktemp)"
+declare TMPDIR="$(mktemp -d)"
+declare SNDFILES="${TMPDIR}/sndfiles"
+declare FLPART="${TMPDIR}/filelistpart"
+declare FILELIST="${TMPDIR}/filelist"
 
 function cleanup {
-    rm -f "${FILELIST}" "${SNDFILES}" "${FLPART}"
+    rm -fr "${TMPDIR}"
 }
 
 trap cleanup EXIT
