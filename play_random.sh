@@ -9,9 +9,7 @@ function usage {
 
 declare -i SEQ=0
 declare TMPDIR="$(mktemp -d)"
-declare SNDFILES="${TMPDIR}/sndfiles"
-declare FLPART="${TMPDIR}/filelistpart"
-declare FILELIST="${TMPDIR}/filelist"
+declare PLAYLIST="${TMPDIR}/playlist"
 
 function cleanup {
     rm -fr "${TMPDIR}"
@@ -40,10 +38,10 @@ while [[ $# -ne 0 ]]; do
         *)
             if [[ -d "$1" ]]; then
                 # We have a directory; add all files in the directory to the list of files to play
-                find "$1" -follow ! -type d >> "${SNDFILES}"
+                find "$1" -follow ! -type d >> "${PLAYLIST}"
             else
                 # We have a file to play, so add it to the list
-                echo "$1" >> "${SNDFILES}"
+                echo "$1" >> "${PLAYLIST}"
             fi
             ;;
         esac
@@ -51,37 +49,23 @@ while [[ $# -ne 0 ]]; do
     shift
 done
 
-# $1 ... number of the line
-# $2 ... the file
-function get_row_n() {
-    head -n $1 "$2" | tail -n 1
-}
+# Do we play random ?
+[[ ${SEQ} -eq 0 ]] && \
+    { shuf -o "${TMPDIR}/x" "${PLAYLIST}" && mv "${TMPDIR}/x" "${PLAYLIST}"; }
 
 function count() {
     wc -l "$1" | cut -d ' ' -f 1
 }
 
-LNS=$(count "${SNDFILES}")
-cat "${SNDFILES}" > "${FILELIST}"
-N=${LNS}
+LNS=$(count "${PLAYLIST}")
 
-[[ ${N} -eq 0 ]] && { usage ; exit 1; }
+while true; do # Play forever {
 
-while true; do
-    [[ ${SEQ} -gt 0 ]] && idx=1 || idx=$(shuf -i 1-$N -n 1)
-    to_play=$(get_row_n ${idx} "${FILELIST}")
-    echo "***********************************************************************************"
+while read to_play; do
+    echo "*********************************************************************************"
     echo "FROM $LNS FILES PLAYING ::" "${to_play}"
-    echo "***********************************************************************************"
+    echo "*********************************************************************************"
     MPLAYER_VERBOSE=-2 mplayer -novideo -msglevel statusline=5 -nolirc "${to_play}"
+done < "${PLAYLIST}";
 
-    if [[ ${N} -eq 1 ]]; then
-        cat "${SNDFILES}" > "${FILELIST}"
-        N=${LNS}
-    else
-        head -n $(( ${idx} - 1 )) "${FILELIST}" > "${FLPART}" 2>/dev/null
-        tail -n $(( ${N} - ${idx} )) "${FILELIST}" >> "${FLPART}" 2>/dev/null
-        cat "${FLPART}" > "${FILELIST}"
-        ((N--))
-    fi
-done
+done # Play forever }
