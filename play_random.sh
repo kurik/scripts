@@ -61,11 +61,11 @@ LNS=$(count "${PLAYLIST}")
 
 while true; do # Play forever {
 
-while read to_play; do
+while read soundfile; do
     echo "*********************************************************************************"
-    echo "FROM $LNS FILES PLAYING ::" "${to_play}"
+    echo "FROM $LNS FILES PLAYING ::" "${soundfile}"
     echo "*********************************************************************************"
-    MPLAYER_VERBOSE=-2 mplayer -novideo -msglevel statusline=5 -nolirc "${to_play}"
+    play -q --norm "${soundfile}"
 done < "${PLAYLIST}";
 
 done # Play forever }
