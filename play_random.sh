@@ -7,7 +7,7 @@ function usage {
     echo "    -h ... print this help"
 }
 
-declare -i SEQ=0
+declare SHUFFLE=1
 declare TMPDIR="$(mktemp -d)"
 declare PLAYLIST="${TMPDIR}/playlist"
 
@@ -21,10 +21,10 @@ trap cleanup EXIT
 while [[ $# -ne 0 ]]; do
     case "$1" in
         "-r")
-            SEQ=0
+            SHUFFLE=1
             ;;
         "-s")
-            SEQ=1
+            SHUFFLE=0
             ;;
         "-h")
             usage
@@ -38,10 +38,10 @@ while [[ $# -ne 0 ]]; do
         *)
             if [[ -d "$1" ]]; then
                 # We have a directory; add all files in the directory to the list of files to play
-                find "$1" -follow ! -type d >> "${PLAYLIST}"
+                find "$1" -follow ! -type d -exec readlink -f {} \; >> "${PLAYLIST}"
             else
                 # We have a file to play, so add it to the list
-                echo "$1" >> "${PLAYLIST}"
+                readlink -f "$1" >> "${PLAYLIST}"
             fi
             ;;
         esac
@@ -49,23 +49,27 @@ while [[ $# -ne 0 ]]; do
     shift
 done
 
-# Do we play random ?
-[[ ${SEQ} -eq 0 ]] && \
-    { shuf -o "${TMPDIR}/x" "${PLAYLIST}" && mv "${TMPDIR}/x" "${PLAYLIST}"; }
-
-function count() {
-    wc -l "$1" | cut -d ' ' -f 1
+function shuffle() {
+    SHUFF="${PLAYLIST}.$$"
+    shuf -o "${SHUFF}" < "${PLAYLIST}" || \
+        { echo 'Error shuffling files'; return 1; }
+    mv "${SHUFF}" "${PLAYLIST}" || \
+        { echo "Can not rename ${SHUFF} to ${PLAYLIST}"; return 1; }
+    return 0
 }
 
-LNS=$(count "${PLAYLIST}")
+while true; do
+    # Random order ?
+    [[ $SHUFFLE -ne 0 ]] && { shuffle || exit 1; }
 
-while true; do # Play forever {
+    # Play the whole playlist
+    MPLAYER_VERBOSE=-2 mplayer \
+        -novideo \
+        -nolirc \
+        -msglevel all=0:input=5:statusline=5 \
+        -playlist "${PLAYLIST}" \
+        || { echo "Error playing playlist"; exit 1; }
+done
 
-while read soundfile; do
-    echo "*********************************************************************************"
-    echo "FROM $LNS FILES PLAYING ::" "${soundfile}"
-    echo "*********************************************************************************"
-    play -q --norm "${soundfile}"
-done < "${PLAYLIST}";
-
-done # Play forever }
+exit 0
+#EOF
