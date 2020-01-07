@@ -1,0 +1,53 @@
+<html>
+    <head>
+        <script>
+<!--
+function redirect() {
+  var searchitem = document.getElementById("search");
+  var numberPattern = /\d+/g;
+  var bz = searchitem.value.match( numberPattern )
+  if (bz === null) {
+    document.getElementById("errmsg").textContent = "ERROR parsing: " + searchitem.value
+  } else {
+    document.getElementById("errmsg").textContent = ""
+    document.getElementById("pg").textContent = "Forwarding to Bugzilla: " + bz + ' ...'
+    window.location.replace("https://bugzilla.redhat.com/show_bug.cgi?id=" + bz);
+  }
+}
+-->
+        </script>
+        <style>
+html, body {
+    height: 100%;
+}
+.parent {
+    width: 100%;
+    height: 100%;
+    display: table;
+    text-align: center;
+}
+.parent > .child {
+    display: table-cell;
+    vertical-align: middle;
+}
+.jku {
+    background-color: coral;
+}
+.errmsg {
+    background-color: red;
+    color: white;
+}
+        </style>
+    </head>
+    <body>
+        <section class="parent"> <div class="child">
+            <form action="javascript:redirect()">
+                <span id="errmsg" class="errmsg"></span>
+                <div class="jku" id="pg">
+                    <label>BZ : <input id="search" type="search" autofocus> </label>
+                    <button type="submit">Go to Bugzilla</button>
+                </div>
+            </form>
+        </div> </section>
+    </body>
+</html>

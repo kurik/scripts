@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Red Hat Bugzilla is pondering your search</title>
+    <link href="skins/standard/global.css?1418266996"
+          rel="stylesheet" type="text/css">
+  </head>
+  <body onload="myFunction()">
+    <h1 style="margin-top: 20%; text-align: center; font-size: xx-large;">Please stand by ...</h1>
+
+<script>
+function myFunction() {
+    var bz = prompt("Please enter Bug number", "");
+    
+    if (bz != null) {
+        window.location = "https://bugzilla.redhat.com/show_bug.cgi?id=" + bz
+    }
+
+}
+
+</script>
+
+</body>
+</html>
