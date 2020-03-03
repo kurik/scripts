@@ -1,0 +1,6 @@
+#!/bin/bash
+
+ssh irc tail -F .irssi/fnotify |\
+while read heading message; do
+    notify-send -u critical "$heading" "$message"
+done
