@@ -4,7 +4,7 @@
 <!--
 function redirect() {
   var searchitem = document.getElementById("search");
-  var numberPattern = /\d+/g;
+  var numberPattern = /\d+/;
   var bz = searchitem.value.match( numberPattern )
   if (bz === null) {
     document.getElementById("errmsg").textContent = "ERROR parsing: " + searchitem.value
