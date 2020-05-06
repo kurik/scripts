@@ -1,0 +1,5 @@
+[Unit]
+Description=Restart the router if network is not available
+
+[Service]
+ExecStart="/usr/local/bin/restart.if.no.net.sh"

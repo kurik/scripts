@@ -1,0 +1,9 @@
+[Unit]
+Description=Restart the router if network is not available
+
+[Timer]
+OnCalendar=*:0/29
+Persistent=false
+
+[Install]
+WantedBy=timers.target
