@@ -49,7 +49,8 @@ mkdir -p "${CACHE}" || \
 
 CF=${CACHE}/deska.html
 TF=$(mktemp)
-curl -k -o ${TF} -s "${URL}"
+curl -k -o ${TF} -s "${URL}" || \
+    { echo "Error downloading the edeska at ${URL}"; exit 1; }
 
 if [[ -f "${CF}" ]]; then
     if diff "${TF}" "${CF}" &> /dev/null; then
