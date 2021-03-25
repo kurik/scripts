@@ -1,7 +1,7 @@
 #!/bin/bash
 LIGHTOFF=var/run/light.off
 SONOFFMASTER="lsensor"
-ONOFF=
+ONOFF="test -f ${LIGHTOFF} && echo ANO || echo NE"
 
 while [[ $# -gt 0 ]]; do
     _p="$1"
@@ -12,11 +12,13 @@ while [[ $# -gt 0 ]]; do
         "NO"|"0"|"FALSE"|"NE"|"NEPRAVDA"|"LEZ")
             ONOFF="rm -f ${LIGHTOFF}"
             ;;
+        *)
+            echo "Neznámý parametr. Použij ANO/NE"
+            exit 1
+            ;;
     esac
     shift
 done
-
-[[ -z "${ONOFF}" ]] && { echo "Neznámý parametr. Použij ANO/NE"; exit 1; }
 
 ssh ${SONOFFMASTER} "${ONOFF}"
 
