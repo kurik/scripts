@@ -1,6 +1,21 @@
 #!/bin/bash
 
-ssh irc tail -F .irssi/fnotify |\
-while read heading message; do
-    notify-send -u critical "$heading" "$message"
-done
+trap "exit 0" 0 1 2 3 15
+
+function translate() {
+    #cat <<< "$1"
+    recode utf8..1250 <<< "$1" | recode 1250..html
+    #recode utf8..1250 <<< "$1" | recode 1250..utf8
+}
+
+function run_ssh() {
+    ssh irc tail -F .irssi/fnotify |\
+    while read server heading message; do
+        message=$(translate "${message}")
+        heading=$(translate "${heading}")
+        LANG=cs_CZ.utf8 kdialog  --passivepopup "${message}" 5 --title "${heading}"
+        #notify-send -u critical "$heading" "$message"
+    done
+}
+
+while true; do run_ssh; sleep 1; done
