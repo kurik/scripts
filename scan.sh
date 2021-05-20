@@ -1,7 +1,15 @@
 #!/bin/bash
 
-DEVICE_IP="172.16.2.199"
-DEVICE="net:${DEVICE_IP}:pixma"
+#DEVICE_IP="172.16.2.199"
+DEVICE_IP="192.168.0.90"
+if nmcli dev wifi | grep -q -e ' Aesthetics ' -e ' Tonnyho ' -e ' Henry ' -e ' BIDA ' -e ' Tonda ';
+then
+    # B
+    DEVICE="airscan:e0:HP Color LaserJet MFP M283fdw (78EA67)"
+else
+    # U
+    DEVICE="net:${DEVICE_IP}:pixma"
+fi
 RESOLUTION=300
 MODE="Color"
 OUTFILE="scan.pdf"
