@@ -12,6 +12,7 @@ except ImportError:
 except ValueError:
     exifAvailable = False
 
+exifAvailable = False
 import datetime
 import shutil
 import GPhoto
