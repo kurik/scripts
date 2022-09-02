@@ -3,8 +3,6 @@
 LAYOUTS="us cz:qwerty"
 STATUSF="${HOME}/.cache/switchkeyboard.status"
 
-# Get the current status
-CURRENT=$([[ -r ${STATUSF} ]] && cat ${STATUSF} || echo "${LAYOUTS%% *}")
 
 # Get the first item in the list
 # ${LAYOUTS%% *}
@@ -26,7 +24,13 @@ function get_next_layout() {
   echo ${layouts%% *}
 }
 
-CURRENT=$(get_next_layout "${CURRENT}" "${LAYOUTS}")
+if [[ -z "${1}" ]]; then
+    # Get the current status
+    CURRENT=$([[ -r ${STATUSF} ]] && cat ${STATUSF} || echo "${LAYOUTS%% *}")
+    CURRENT=$(get_next_layout "${CURRENT}" "${LAYOUTS}")
+else
+    CURRENT="${1}"
+fi
 setxkbmap ${CURRENT//:/ }
 
 # Save the current status
