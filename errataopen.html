@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <script>
+<!--
+function redirect() {
+  var searchitem = document.getElementById("search");
+  var numberPattern = /:\d+/;
+  var numberPattern2 = /\d+/;
+  var ert = searchitem.value.match( numberPattern );
+ 
+  if (ert === null) {
+    ert = searchitem.value.match( numberPattern2 );
+  } else {
+    ert = String(ert).match( numberPattern2 );
+  }
+  if (ert === null) {
+      document.getElementById("errmsg").textContent = "ERROR parsing: " + searchitem.value
+  } else {
+    document.getElementById("errmsg").textContent = ""
+    document.getElementById("pg").textContent = "Forwarding to ErrataTool: " + ert + ' ...'
+    window.location.replace("https://errata.engineering.redhat.com/advisory/" + ert);
+  }
+}
+-->
+        </script>
+        <style>
+html, body {
+    height: 100%;
+}
+.parent {
+    width: 100%;
+    height: 100%;
+    display: table;
+    text-align: center;
+}
+.parent > .child {
+    display: table-cell;
+    vertical-align: middle;
+}
+.jku {
+    background-color: green;
+}
+.errmsg {
+    background-color: red;
+    color: white;
+}
+        </style>
+    </head>
+    <body>
+        <section class="parent"> <div class="child">
+            <form action="javascript:redirect()">
+                <span id="errmsg" class="errmsg"></span>
+                <div class="jku" id="pg">
+                    <label>Erratum number : <input id="search" type="search" autofocus> </label>
+                    <button type="submit">Go to ErrataTool</button>
+                </div>
+            </form>
+        </div> </section>
+    </body>
+</html>
